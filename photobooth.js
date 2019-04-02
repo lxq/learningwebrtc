@@ -33,6 +33,8 @@ if (!!usermedia) {
         }
     );
 
+    var filters = ["", "grayscale", "sepia", "invert"];
+    var cur = 0;
     document.querySelector("#capture").addEventListener("click", function(e) {
         if (streaming) {
             canvas.width = video.clientWidth;
@@ -40,6 +42,10 @@ if (!!usermedia) {
 
             var ctx = canvas.getContext("2d");
             ctx.drawImage(video, 0, 0);
+
+            cur++;
+            if (cur > filters.length - 1) cur = 0;
+            canvas.className = filters[cur];
         }
     });
 } else {
