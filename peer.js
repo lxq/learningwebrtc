@@ -55,6 +55,12 @@ function startPeer(stream) {
     yc = new RTCPeerConnection(cfg);
     tc = new RTCPeerConnection(cfg);
 
+    // 监听流
+    yc.addStream(stream);
+    tc.onaddstream = function(e) {
+        tv.src = window.URL.createObjectURL(e.stream);
+    };
+
     // ICE
     yc.onicecandidate = function(e) {
         if (e.candidate) {
@@ -78,9 +84,4 @@ function startPeer(stream) {
         });
     });
 
-    // 监听流
-    yc.addStream(stream);
-    tc.onaddstream = function(e) {
-        tv.src = window.URL.createObjectURL(e.stream);
-    };
 }
