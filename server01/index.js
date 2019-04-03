@@ -17,9 +17,19 @@ wss.on("connection", function(conn) {
     console.log("有用户连接.");
 
     conn.on("message", function(msg) {
-        console.log("收到消息：", msg);
+        var data;
+        try {
+            data = JSON.parse(msg);
+        } catch (e) {
+            console.log("非JSON格式数据.");
+            data = {};
+        }
     });
 
     conn.send("你好， WebSocket.");
 });
+
+function sendTo(conn, msg) {
+    conn.send(JSON.stringify(msg));
+}
 
