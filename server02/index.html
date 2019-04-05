@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8"/>
+        <title>RTC客户端</title>
+        <style>
+            body {
+                background-color: #3D6D2F;
+                margin-top: 15px;
+            }
+
+            video {
+                background: black;
+                border: 1px solid gray;
+            }
+
+            .container {
+                position: relative;
+                display: block;
+                margin: 0 auto;
+                width: 500px;
+                height: 500px;
+            }
+            #yours {
+                width: 150px;
+                height: 150px;
+                position: absolute;
+                top: 15px;
+                right: 15px;
+            }
+            #theirs {
+                width: 500px;
+                height: 500px;
+            }
+        </style>
+    </head>
+
+    <body>
+        <div id="div_login" class="container">
+            <h2>登录</h2>
+            <input type="text" id="user_name"/>
+            <button id="btn_login">登录</button>
+        </div>
+        <div id="div_rtc" class="container">
+            <video id="yours" autoplay></video>
+            <video id="theirs" autoplay></video>
+            <input type="text" id="user_another"/>
+            <button id="btn_call">呼叫</button>
+            <button id="btn_hangup">挂断</button>
+        </div>
+        <script src="main.js"></script>
+
+    </body>
+</html>
