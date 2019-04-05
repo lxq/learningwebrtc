@@ -30,22 +30,13 @@ wss.on("connection", function(conn) {
 
         switch(data.type) {
             case "login":
-                {
-                    console.log("用户登录：", data.name);
-                    if (users[data.name]) {
-                        sendTo(conn, {
-                            type: "login",
-                            success: false
-                        });
-                    } else {
-                        users[data.name] = conn;
-                        conn.name = data.name;
-                        sendTo(conn, {
-                            type: "login",
-                            success: true
-                        });
-                    }
-                }
+                login(conn, users, data);
+                break;
+            case "offer":
+                offer(conn, users, data);
+                break;
+            case "answer":
+                answer(conn, users, data);
                 break;
             default:
                 {
@@ -72,3 +63,41 @@ function sendTo(conn, msg) {
     conn.send(JSON.stringify(msg));
 }
 
+function login(conn, users, data) {
+    console.log("用户登录：", data.name);
+    if (users[data.name]) {
+        sendTo(conn, {
+            type: "login",
+            success: false
+        });
+    } else {
+        users[data.name] = conn;
+        conn.name = data.name;
+        sendTo(conn, {
+            type: "login",
+            success: true
+        });
+    }    
+}
+
+function offer(conn, users, data) {
+    console.log("发送offer给用户：", data.name);
+    var cur_conn = users[data.name];
+    if (null != cur_conn) {
+        conn.other_name = data.name;
+        sendTo(cur_conn, {
+            type: "offer",
+            offer: data.offer,
+            name: conn.name
+        });
+    }
+}
+
+function answer(conn, users, data) {
+    console.log("给用户发送answer: ", data.name);
+    var cur_conn = users[data.name];
+    if (null != cur_conn) {
+        conn.other_name = data.name;
+        sendTo(cur_conn, {type: "answer", answer: data.answer});
+    }
+}
