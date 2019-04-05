@@ -2,8 +2,6 @@
 // 2019/4/3
 // lxq@weetgo.com
 
-console.log("信令服务器启动......");
-
 // WebSocket:> npm install -g ws
 
 // 测试工具: > npm install -g wscat
@@ -15,6 +13,10 @@ var WebSocketServer = WebSocket.Server;
 var wss = new WebSocketServer({port: 8899});
 // 存放连接用户.
 var users = {};
+
+wss.on("listening", function() {
+    console.log("信令服务器启动......");
+});
 
 wss.on("connection", function(conn) {
     console.log("有用户连接.");
@@ -41,6 +43,9 @@ wss.on("connection", function(conn) {
             case "candidate":
                 candidate(users, data);
                 break;
+            case "leave":
+                leave(users, data);
+                break;
             default:
                 {
                     sendTo(conn, {
@@ -56,6 +61,14 @@ wss.on("connection", function(conn) {
     conn.on("close", function(msg) {
         if (conn.name) {
             delete users[conn.name];
+            if (conn.other_name) {
+                console.log("用户断开：", conn.other_name);
+                var cur_conn = users[conn.other_name];
+                cur_conn.other_name = null;
+                if (null != cur_conn) {
+                    sendTo(cur_conn, {type: "leave"});
+                }
+            }
         }
     });
 
@@ -115,5 +128,14 @@ function candidate(users, data) {
             type: "candidate",
             candidate: data.candidate
         });
+    }
+}
+
+function leave(users, data) {
+    console.log("用户断开连接：", data.name);
+    var conn = users[data.name];
+    conn.other_name = null;
+    if (null != conn) {
+        sendTo(conn, {type: "leave"});
     }
 }
