@@ -38,6 +38,9 @@ wss.on("connection", function(conn) {
             case "answer":
                 answer(conn, users, data);
                 break;
+            case "candidate":
+                candidate(users, data);
+                break;
             default:
                 {
                     sendTo(conn, {
@@ -99,5 +102,18 @@ function answer(conn, users, data) {
     if (null != cur_conn) {
         conn.other_name = data.name;
         sendTo(cur_conn, {type: "answer", answer: data.answer});
+    }
+}
+
+// ICE中连接已建立.
+// candidate = offer + answer
+function candidate(users, data) {
+    console.log("给用户发送ICE候选路径：", data.name);
+    var conn = users[data.name];
+    if (null != conn) {
+        sendTo(conn, {
+            type: "candidate",
+            candidate: data.candidate
+        });
     }
 }
