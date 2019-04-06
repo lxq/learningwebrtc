@@ -16,13 +16,13 @@ var conn_user;
 
 // 特别说明：这里不能使用“localhost"——会存在WebSocket跨域问题;
 // 原因是：static服务器默认是启动的 127.0.0.1:8080
-var conn = new WebSocket("ws://127.0.0.1:8899");
+var ws = new WebSocket("ws://127.0.0.1:8899");
 
-conn.onopen = function() {
+ws.onopen = function() {
     console.log("已连接.");
 };
 
-conn.onmessage = function(msg){
+ws.onmessage = function(msg){
     console.log("收到信息: ", msg.data);
 
     try {
@@ -48,7 +48,7 @@ conn.onmessage = function(msg){
     }    
 };
 
-conn.onerror = function(err){
+ws.onerror = function(err){
     console.log("错误信息：", err);
 };
 
@@ -57,7 +57,7 @@ function send(msg) {
         msg.name = conn_user;
     }
 
-    conn.send(JSON.stringify(msg));
+    ws.send(JSON.stringify(msg));
 }
 
 
@@ -71,6 +71,11 @@ var btn_call = document.querySelector("#btn_call");
 var btn_hangup = document.querySelector("#btn_hangup");
 div_rtc.style.display = "none";
 
+var yvideo = document.querySelector("#yours");
+var tvideo = document.querySelector("#theirs");
+
+var peer_conn, cur_user, stream;
+
 btn_login.addEventListener("click", function(e) {
     var name = input_username.value;
     if (name.length > 0) {
@@ -83,6 +88,11 @@ btn_call.addEventListener("click", function(e) {
     if (name.length > 0) {
         start_peer(name);
     }
+});
+
+btn_hangup.addEventListener("click", function(e) {
+    send({type: "leave"});
+    onLeave();
 });
 
 
@@ -117,13 +127,14 @@ function onCandidate(candidate) {
 }
 
 function onLeave() {
-
+    conn_user = null;
+    yvideo.src = null;
+    peer_conn.close();
+    peer_conn.onicecandidate = null;
+    peer_conn.onaddstream = null;
+    setup_peer(stream);
 }
 
-var yvideo = document.querySelector("#yours");
-var tvideo = document.querySelector("#theirs");
-
-var peer_conn, cur_user, stream;
 
 function getUserMedia() {
     return (navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia || navigator.msGetUserMedia);
