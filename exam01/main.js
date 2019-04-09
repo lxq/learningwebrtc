@@ -36,7 +36,8 @@ if (!!usermedia) {
         // @param stream 当前设备上能产生数据流的媒体设备.
         function(stream) {
             var v = document.querySelector("video");
-            v.src = window.URL.createObjectURL(stream);
+            v.srcObject = stream;
+            // v.src = window.URL.createObjectURL(stream);
         },
         // 错误回调.
         function (err) {}
