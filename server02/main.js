@@ -11,12 +11,44 @@
  */
 
 
-var user_name;
-var conn_user;
-
 // 特别说明：这里不能使用“localhost"——会存在WebSocket跨域问题;
 // 原因是：static服务器默认是启动的 127.0.0.1:8080
 var ws = new WebSocket("ws://127.0.0.1:8899");
+
+var div_login = document.querySelector("#div_login");
+var input_username = document.querySelector("#user_name");
+var btn_login = document.querySelector("#btn_login");
+var div_rtc = document.querySelector("#div_rtc");
+var input_other = document.querySelector("#user_another");
+var btn_call = document.querySelector("#btn_call");
+var btn_hangup = document.querySelector("#btn_hangup");
+div_rtc.style.display = "none";
+
+var yvideo = document.querySelector("#yours");
+var tvideo = document.querySelector("#theirs");
+
+var user_name;
+var peer_conn, cur_user, stream;
+
+btn_login.addEventListener("click", function(e) {
+    user_name = input_username.value;
+    if (user_name.length > 0) {
+        send({type: "login", name: user_name});
+    }
+});
+
+btn_call.addEventListener("click", function(e) {
+    var name = input_other.value;
+    if (name.length > 0) {
+        start_peer(name);
+    }
+});
+
+btn_hangup.addEventListener("click", function(e) {
+    send({type: "leave"});
+    onLeave();
+});
+
 
 ws.onopen = function() {
     console.log("已连接.");
@@ -37,6 +69,9 @@ ws.onmessage = function(msg){
             case "answer":
                 onAnswer(data.answer);
                 break;
+            case "candidate":
+                onCandidate(data.candidate);
+                break;
             case "leave":
                 onLeave();
                 break;
@@ -53,48 +88,12 @@ ws.onerror = function(err){
 };
 
 function send(msg) {
-    if (conn_user) {
-        msg.name = conn_user;
+    if (cur_user) {
+        msg.name = cur_user;
     }
 
     ws.send(JSON.stringify(msg));
 }
-
-
-
-var div_login = document.querySelector("#div_login");
-var input_username = document.querySelector("#user_name");
-var btn_login = document.querySelector("#btn_login");
-var div_rtc = document.querySelector("#div_rtc");
-var input_other = document.querySelector("#user_another");
-var btn_call = document.querySelector("#btn_call");
-var btn_hangup = document.querySelector("#btn_hangup");
-div_rtc.style.display = "none";
-
-var yvideo = document.querySelector("#yours");
-var tvideo = document.querySelector("#theirs");
-
-var peer_conn, cur_user, stream;
-
-btn_login.addEventListener("click", function(e) {
-    var name = input_username.value;
-    if (name.length > 0) {
-        send({type: "login", name: name});
-    }
-});
-
-btn_call.addEventListener("click", function(e) {
-    var name = input_other.value;
-    if (name.length > 0) {
-        start_peer(name);
-    }
-});
-
-btn_hangup.addEventListener("click", function(e) {
-    send({type: "leave"});
-    onLeave();
-});
-
 
 function onLogin(flag) {
     if (flag) {
@@ -108,7 +107,7 @@ function onLogin(flag) {
 }
 
 function onOffer(offer, name) {
-    conn_user = name;
+    cur_user = name;
     peer_conn.setRemoteDescription(new RTCTSessionDescription(offer));
     peer_conn.createAnswer(function(answer) {
         peer_conn.setLocalDescription(answer);
@@ -127,7 +126,7 @@ function onCandidate(candidate) {
 }
 
 function onLeave() {
-    conn_user = null;
+    cur_user = null;
     yvideo.src = null;
     peer_conn.close();
     peer_conn.onicecandidate = null;
@@ -186,7 +185,7 @@ function setup_peer(stream) {
 }
 
 function start_peer(name) {
-    conn_user = name;
+    cur_user = name;
 
     // offer
     peer_conn.createOffer(function(offer) {
