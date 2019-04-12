@@ -4,6 +4,11 @@
 // RTCPeerConnection 练习.
 
 // 采用StreamMedia API重写.
+// @date 2019/4/11
+// @description 两个Peer通信直接在一个网页中进行连接，其中的Server由浏览器自动模拟.
+//              在Edge中测试通过。
+//              在Firefox中无法正确运行，提示：RTCIceServer.url is deprecated! Use urls instead.  onaddstream is deprecated! Use peerConnection.ontrack instead.
+//              Chrome中运行正确，但无法显示另一个Video。
 (function(){
     var video_me = null, video_you = null;
     var peer_me = null, peer_you = null;
