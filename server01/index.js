@@ -84,6 +84,9 @@
         conn.send(JSON.stringify(msg));
     }
     
+    /**
+     * login message format: {"type":"login", "name":"abc"}
+     */
     function login(conn, users, data) {
         console.log("用户登录：", data.name);
         if (users[data.name]) {
@@ -100,7 +103,11 @@
             });
         }    
     }
-    
+    /**
+     * offer message format: {"type": "offer", "name":"user name","offer":"your data"}
+     * "name" 是指当前需要信息到达的另一个用户名.
+     * "offer" 是需要传输的数据内容.
+     */
     function offer(conn, users, data) {
         console.log("发送offer给用户：", data.name);
         var cur_conn = users[data.name];
@@ -114,6 +121,9 @@
         }
     }
     
+    /**
+     * fmt: {"type":"answer", "name":"user name", "answer":"answer data"}
+     */
     function answer(conn, users, data) {
         console.log("给用户发送answer: ", data.name);
         var cur_conn = users[data.name];
