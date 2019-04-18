@@ -11,18 +11,18 @@
  */
 
 
-// 特别说明：这里不能使用“localhost"——会存在WebSocket跨域问题;
-// 原因是：static服务器默认是启动的 127.0.0.1:8080
-var ws = new WebSocket("ws://127.0.0.1:8899");
+ (function(){
 
-var div_login = document.querySelector("#div_login");
-var input_username = document.querySelector("#user_name");
-var btn_login = document.querySelector("#btn_login");
-var div_rtc = document.querySelector("#div_rtc");
-var input_other = document.querySelector("#user_another");
-var btn_call = document.querySelector("#btn_call");
-var btn_hangup = document.querySelector("#btn_hangup");
-div_rtc.style.display = "none";
+// websocket
+var ws;
+
+var div_login;
+var input_username;
+var btn_login ;
+var div_rtc;
+var input_other;
+var btn_call;
+var btn_hangup;
 
 var yvideo = document.querySelector("#yours");
 var tvideo = document.querySelector("#theirs");
@@ -30,62 +30,83 @@ var tvideo = document.querySelector("#theirs");
 var user_name;
 var peer_conn, cur_user, stream;
 
-btn_login.addEventListener("click", function(e) {
-    user_name = input_username.value;
-    if (user_name.length > 0) {
-        send({type: "login", name: user_name});
-    }
-});
+function start_up() {
+    // 特别说明：这里不能使用“localhost"——会存在WebSocket跨域问题;
+    // 原因是：static服务器默认是启动的 127.0.0.1:8080
+    ws = new WebSocket("ws://127.0.0.1:8899");
 
-btn_call.addEventListener("click", function(e) {
-    var name = input_other.value;
-    if (name.length > 0) {
-        start_peer(name);
-    }
-});
+    div_login = document.querySelector("#div_login");
+    input_username = document.querySelector("#user_name");
+    btn_login = document.querySelector("#btn_login");
+    div_rtc = document.querySelector("#div_rtc");
+    input_other = document.querySelector("#user_another");
+    btn_call = document.querySelector("#btn_call");
+    btn_hangup = document.querySelector("#btn_hangup");
+    div_rtc.style.display = "none";
 
-btn_hangup.addEventListener("click", function(e) {
-    send({type: "leave"});
-    onLeave();
-});
+    yvideo = document.querySelector("#yours");
+    tvideo = document.querySelector("#theirs");
 
+    btn_login.addEventListener("click", function(e) {
+        user_name = input_username.value;
+        if (user_name.length > 0) {
+            send({type: "login", name: user_name});
+        }
+    });
+    
+    btn_call.addEventListener("click", function(e) {
+        var name = input_other.value;
+        if (name.length > 0) {
+            call_peer(name);
+        }
+    });
+    
+    btn_hangup.addEventListener("click", function(e) {
+        send({type: "leave"});
+        onLeave();
+    });  
+    
+    
+    // web socket events    
+    ws.onopen = function() {
+        console.log("已连接.");
+    };
 
-ws.onopen = function() {
-    console.log("已连接.");
-};
+    ws.onmessage = function(msg){
+        console.log("收到信息: ", msg.data);
 
-ws.onmessage = function(msg){
-    console.log("收到信息: ", msg.data);
-
-    try {
-        var data = JSON.parse(msg.data);
-        switch(data.type) {
-            case "login":
-                onLogin(data.success);
-                break;
-            case "offer":
-                onOffer(data.offer, data.name);
-                break;
-            case "answer":
-                onAnswer(data.answer);
-                break;
-            case "candidate":
-                onCandidate(data.candidate);
-                break;
-            case "leave":
-                onLeave();
-                break;
-            default:
-                break;
+        try {
+            var data = JSON.parse(msg.data);
+            switch(data.type) {
+                case "login":
+                    onLogin(data.success);
+                    break;
+                case "offer":
+                    onOffer(data.offer, data.name);
+                    break;
+                case "answer":
+                    onAnswer(data.answer);
+                    break;
+                case "candidate":
+                    onCandidate(data.candidate);
+                    break;
+                case "leave":
+                    onLeave();
+                    break;
+                default:
+                    break;
+            }    
+        } catch (err) {
+            console.log("数据没有JSON内容，无法解析.");
         }    
-    } catch (err) {
-        console.log("数据没有JSON内容，无法解析.");
-    }    
-};
+    };
 
-ws.onerror = function(err){
-    console.log("错误信息：", err);
-};
+    ws.onerror = function(err){
+        console.log("错误信息：", err);
+    };
+
+}
+
 
 function send(msg) {
     if (cur_user) {
@@ -184,8 +205,8 @@ function setup_peer(stream) {
     };
 }
 
-function start_peer(name) {
-    cur_user = name;
+function call_peer(remoteuser) {
+    cur_user = remoteuser;
 
     // offer
     peer_conn.createOffer(function(offer) {
@@ -195,3 +216,7 @@ function start_peer(name) {
         alert("Offer 发生错误.");
     });
 }
+
+window.addEventListener("load", start_up, false);
+ })();
+

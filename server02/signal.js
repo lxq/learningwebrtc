@@ -16,7 +16,7 @@
     var WSServer = require("ws").Server;
     
     var wss = new WSServer({port: 8899});
-    // 存放连接用户.
+    // 存放连接用户.{"name": connecton}
     var users = {};
     
     wss.on("listening", function() {
@@ -77,7 +77,7 @@
             }
         });
     
-        conn.send("你好， WebSocket.");
+        // conn.send("你好， WebSocket.");
     });
     
     function sendTo(conn, msg) {
