@@ -185,7 +185,7 @@ function start_conn() {
 function setup_peer(stream) {
     // peer connection
     var cfg = {
-        "iceServers":[{"url": "stun:127.0.0.1:8899"}]
+        "iceServers":[{"urls": "stun:127.0.0.1:8899"}]
     };
     peer_conn = new RTCPeerConnection(cfg);
     peer_conn.addStream(stream);
