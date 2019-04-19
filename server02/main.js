@@ -166,24 +166,20 @@ function hasPeerConn() {
 }
 
 function start_conn() {
-    var usermedia = getUserMedia();
-    navigator.getUserMedia = usermedia;
-    if (!!usermedia) {
-        var cons = {video: true, audio: false};
-        navigator.getUserMedia(cons, function(mystream) {
-            stream = mystream;
-            yvideo.src = window.URL.createObjectURL(stream);
+    var cons = {video: true, audio: false};
+    navigator.mediaDevices.getUserMedia(cons)
+        .then(function(str) {
+            stream = str;
+            yvideo.srcObject = stream;
             if (hasPeerConn()) {
                 setup_peer(stream);
             } else {
                 alert("浏览器不支持WebRTC.");
             }
-        }, function (err) {
-            console.log(err);
+        })
+        .catch(function(err) {
+            alert("获取用户媒体流失败.");
         });
-    } else {
-        alert("浏览器不支持WebRTC");
-    }
 }
 
 function setup_peer(stream) {
@@ -194,7 +190,7 @@ function setup_peer(stream) {
     peer_conn = new RTCPeerConnection(cfg);
     peer_conn.addStream(stream);
     peer_conn.onaddstream = function(e) {
-        tvideo.src = window.URL.createObjectURL(e.stream);
+        tvideo.srcObject = e.stream;
     };
 
     // ICE
