@@ -155,46 +155,28 @@ function onLeave() {
     setup_peer(stream);
 }
 
-
-function getUserMedia() {
-    return (navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia || navigator.msGetUserMedia);
-}
-
-function hasPeerConn() {
-    window.RTCPeerConnection = window.RTCPeerConnection || window.webkitRTCPeerConnection || window.mozRTCPeerConnection;
-    return !!(window.RTCPeerConnection);
-}
-
 function start_conn() {
-    var usermedia = getUserMedia();
-    navigator.getUserMedia = usermedia;
-    if (!!usermedia) {
-        var cons = {video: true, audio: false};
-        navigator.getUserMedia(cons, function(mystream) {
-            stream = mystream;
-            yvideo.src = window.URL.createObjectURL(stream);
-            if (hasPeerConn()) {
-                setup_peer(stream);
-            } else {
-                alert("浏览器不支持WebRTC.");
-            }
-        }, function (err) {
-            console.log(err);
+    var cons = {video: true, audio: false};
+    navigator.mediaDevices.getUserMedia(cons)
+        .then(function(str) {
+            stream = str;
+            yvideo.srcObject = stream;
+            setup_peer(stream);
+        })
+        .catch(function(err) {
+            alert("获取媒体设备失败: " + err);
         });
-    } else {
-        alert("浏览器不支持WebRTC");
-    }
 }
 
 function setup_peer(stream) {
     // peer connection
     var cfg = {
-        "iceServers":[{"url": "stun:127.0.0.1:8899"}]
+        "iceServers":[{"urls": "stun:127.0.0.1:8899"}]
     };
     peer_conn = new RTCPeerConnection(cfg);
     peer_conn.addStream(stream);
     peer_conn.onaddstream = function(e) {
-        tvideo.src = window.URL.createObjectURL(e.stream);
+        tvideo.srcObject = e.stream;
     };
 
     // ICE
