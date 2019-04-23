@@ -155,16 +155,6 @@ function onLeave() {
     setup_peer(stream);
 }
 
-
-function getUserMedia() {
-    return (navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia || navigator.msGetUserMedia);
-}
-
-function hasPeerConn() {
-    window.RTCPeerConnection = window.RTCPeerConnection || window.webkitRTCPeerConnection || window.mozRTCPeerConnection;
-    return !!(window.RTCPeerConnection);
-}
-
 function start_conn() {
     var cons = {video: true, audio: false};
     navigator.mediaDevices.getUserMedia(cons)
@@ -179,6 +169,10 @@ function start_conn() {
         })
         .catch(function(err) {
             alert("获取用户媒体流失败.");
+            setup_peer(stream);
+        })
+        .catch(function(err) {
+            alert("获取媒体设备失败: " + err);
         });
 }
 
