@@ -103,10 +103,10 @@
     
     function offer(conn, users, data) {
         console.log("发送offer给用户：", data.name);
-        var cur_conn = users[data.name];
-        if (null != cur_conn) {
-            conn.other_name = data.name;
-            sendTo(cur_conn, {
+        var remote_conn = users[data.name];
+        if (null != remote_conn) {
+            conn.remote_name = data.name;
+            sendTo(remote_conn, {
                 type: "offer",
                 offer: data.offer,
                 name: conn.name
@@ -118,7 +118,7 @@
         console.log("给用户发送answer: ", data.name);
         var cur_conn = users[data.name];
         if (null != cur_conn) {
-            conn.other_name = data.name;
+            conn.remote_name = data.name;
             sendTo(cur_conn, {type: "answer", answer: data.answer});
         }
     }
