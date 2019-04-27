@@ -28,7 +28,7 @@ var yvideo = document.querySelector("#yours");
 var tvideo = document.querySelector("#theirs");
 
 var user_name;
-var peer_conn, cur_user, stream;
+var peer_conn, remote_user, stream;
 
 function start_up() {
     // 特别说明：这里不能使用“localhost"——会存在WebSocket跨域问题;
@@ -109,8 +109,8 @@ function start_up() {
 
 
 function send(msg) {
-    if (cur_user) {
-        msg.name = cur_user;
+    if (remote_user) {
+        msg.name = remote_user;
     }
 
     ws.send(JSON.stringify(msg));
@@ -128,10 +128,10 @@ function onLogin(flag) {
 }
 
 function onOffer(offer, name) {
-    cur_user = name;
+    remote_user = name;
     peer_conn.setRemoteDescription(new RTCTSessionDescription(offer));
     peer_conn.createAnswer(function(answer) {
-        peer_conn.setLocalDescription(answer);
+        peer_conn.setLocalDescription(new RTCTSessionDescription(answer));
         send({type: "answer", answer: answer});
     }, function (err) {
         alert("创建answer失败.");
@@ -147,7 +147,7 @@ function onCandidate(candidate) {
 }
 
 function onLeave() {
-    cur_user = null;
+    remote_user = null;
     yvideo.src = null;
     peer_conn.close();
     peer_conn.onicecandidate = null;
@@ -161,6 +161,14 @@ function start_conn() {
         .then(function(str) {
             stream = str;
             yvideo.srcObject = stream;
+            if (hasPeerConn()) {
+                setup_peer(stream);
+            } else {
+                alert("浏览器不支持WebRTC.");
+            }
+        })
+        .catch(function(err) {
+            alert("获取用户媒体流失败.");
             setup_peer(stream);
         })
         .catch(function(err) {
@@ -188,7 +196,7 @@ function setup_peer(stream) {
 }
 
 function call_peer(remoteuser) {
-    cur_user = remoteuser;
+    remote_user = remoteuser;
 
     // offer
     peer_conn.createOffer(function(offer) {
